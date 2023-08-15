@@ -13,7 +13,7 @@ from nonebot_plugin_htmlrender import md_to_pic
 from nonebot_plugin_apscheduler import scheduler
 
 from .config import Config
-from .utils import upd_luogu, upd_cf, upd_atc, upd_nowcoder, get_today, get_preluogu, get_luogu, get_precf, get_cf
+from .utils import upd_luogu, upd_cf, upd_atc, upd_nowcoder, get_today, get_preluogu, get_luogu, get_precf, get_cf, get_preatc, get_atc, get_prenc, get_nc
 
 driver = get_driver()
 global_config = get_driver().config
@@ -22,12 +22,12 @@ config = Config.parse_obj(global_config)
 __plugin_meta__ = PluginMetadata(
     name="OCN",
     description="OI Contest Notifier订阅洛谷/CF/Atcoder/牛客平台的比赛信息",
-    usage="luogu/preluogu(洛谷/洛谷历史) x 查询洛谷未来/历史的x场比赛（x默认为3）"
-    "cf/precf x 查询CF未来/历史的x场比赛（x默认为3）"
-    "atc/preatc x 查询Atcoder未来/历史的x场比赛（x默认为3）"
-    "nc/prenc(牛客/牛客历史) x 查询牛客未来/历史的x场比赛（x默认为3）"
+    usage="luogu/preluogu(洛谷/洛谷历史) x 查询洛谷近期/历史的x场比赛（x默认为3）"
+    "cf/precf x 查询CF近期/历史的x场比赛（x默认为3）"
+    "atc/preatc x 查询Atcoder近期/历史的x场比赛（x默认为3）"
+    "nc/prenc(牛客/牛客历史) x 查询牛客近期/历史的x场比赛（x默认为3）"
     "today(今日/今日比赛/今天/今天比赛) 查询所有平台今天的比赛"
-    "next(最近/最近比赛) x 查询所有平台最近的x场比赛（x默认为3）"
+    "next(近期/近期比赛) x 查询所有平台近期的x场比赛（x默认为3）"
     "update(手动更新) 手动更新缓存"
     "help 输出指令帮助")
 
@@ -54,6 +54,7 @@ async def _update():
 
 # 先写定时部分
 # 定时自动更新缓存
+#! 定时自动更新通知会向所有在.env.dev文件中配置了SUPERUSER的QQ号播报，config.py里有开关，默认开
 @scheduler.scheduled_job('interval',
                          minutes=config.update_time,
                          id="auto_update")
@@ -83,8 +84,12 @@ async def auto_update():
                     user_id=int(adid))
 
 
-# 每日播报今日比赛
-@scheduler.scheduled_job("cron", hour='8', minute='1', id="auto_today")
+# 每日八点一分向所有群聊播报今日比赛
+#TODO 添加群聊/私聊订阅功能，只向订阅了的播报今日比赛
+@scheduler.scheduled_job("cron",
+                         hour=str(config.broadcast_hour),
+                         minute=str(config.broadcast_minute),
+                         id="auto_today")
 async def auto_today():
     bot = nonebot.get_bot()
     group_list = await bot.get_group_list()
@@ -111,6 +116,23 @@ async def manual_update(event: MessageEvent):
             MessageSegment.image(await
                                  md_to_pic("手动更新失败！\n" + e + "\n\n防风控编码" +
                                            str(time.time()))))
+
+
+# today今日比赛
+today = on_command('today', priority=3, aliases={'今日', '今日比赛', '今天', '今天比赛'})
+
+
+@today.handle()
+async def cmd_today(event: MessageEvent):
+    try:
+        res = await get_today()
+        await today.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await today.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
 
 
 # 洛谷
@@ -187,5 +209,83 @@ async def cmd_cf(event: MessageEvent):
         logger.warning("查询失败！")
         logger.warning(e)
         await cf.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
+
+
+# atcoder
+preatc = on_keyword(['preatc'], priority=2, block=True)
+atc = on_keyword(['atc'], priority=3)
+
+
+@preatc.handle()
+async def cmd_preatc(event: MessageEvent):
+    try:
+        counts = int(str(event.get_message()).split()[1])
+    except:
+        counts = 3
+    try:
+        res = await get_preatc(counts)
+        await preatc.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await preatc.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
+
+
+@atc.handle()
+async def cmd_atc(event: MessageEvent):
+    try:
+        counts = int(str(event.get_message()).split()[1])
+    except:
+        counts = 3
+    try:
+        res = await get_atc(counts)
+        await atc.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await atc.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
+
+
+# 牛客
+prenc = on_keyword(['prenc', '牛客历史'], priority=2, block=True)
+nc = on_keyword(['nc', '牛客'], priority=3)
+
+
+@prenc.handle()
+async def cmd_prenc(event: MessageEvent):
+    try:
+        counts = int(str(event.get_message()).split()[1])
+    except:
+        counts = 3
+    try:
+        res = await get_prenc(counts)
+        await prenc.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await prenc.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
+
+
+@nc.handle()
+async def cmd_nc(event: MessageEvent):
+    try:
+        counts = int(str(event.get_message()).split()[1])
+    except:
+        counts = 3
+    try:
+        res = await get_nc(counts)
+        await nc.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await nc.finish(
             MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
                                                  str(time.time()))))

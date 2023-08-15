@@ -176,7 +176,7 @@ async def get_today():
 async def get_preluogu(counts):
     results = []
 
-    f = open('luogu.txt', 'r', encoding='utf-8')
+    f = open('./data/luogu.txt', 'r', encoding='utf-8')
     res = f.read()
     f.close()
     res = json.loads(res)['currentData']['contests']['result']
@@ -204,7 +204,7 @@ async def get_preluogu(counts):
             ans += f"\n<li>比赛时间：{conts[1]}</li>"
             ans += f"\n<li>比赛链接：https://www.luogu.com.cn/contest/{conts[2]}</li>"
             ans += "</ul>\n</li>\n"
-        ans+="</ol>"
+        ans += "</ol>"
         if len(results) < counts:
             return kaitou + f'缓存中洛谷历史比赛不足 {str(counts)} 场，找到历史 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
         else:
@@ -214,7 +214,7 @@ async def get_preluogu(counts):
 async def get_luogu(counts):
     results = []
 
-    f = open('luogu.txt', 'r', encoding='utf-8')
+    f = open('./data/luogu.txt', 'r', encoding='utf-8')
     res = f.read()
     f.close()
     res = json.loads(res)['currentData']['contests']['result']
@@ -241,7 +241,7 @@ async def get_luogu(counts):
             ans += f"\n<li>比赛时间：{conts[1]}</li>"
             ans += f"\n<li>比赛链接：https://www.luogu.com.cn/contest/{conts[2]}</li>"
             ans += "</ul>\n</li>\n"
-        ans+="</ol>"
+        ans += "</ol>"
         if len(results) < counts:
             return kaitou + f'洛谷近期比赛不足 {str(counts)} 场，找到近期 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
         else:
@@ -250,25 +250,26 @@ async def get_luogu(counts):
 
 async def get_precf(counts):
     results = []
-    
-    f = open('cf.txt', 'r',encoding='utf-8')
+
+    f = open('./data/cf.txt', 'r', encoding='utf-8')
     res = f.read()
     f.close()
     res = json.loads(res)['result']
     for ress in res:
         if ress["phase"] != "FINISHED":
             continue
-        name=ress['name']
-        DateTime=ress['startTimeSeconds']
-        contest_id=ress['id']
-        time_local=time.localtime(DateTime)
-        dt=time.strftime("%Y-%m-%d %H:%M:%S",time_local)
+        name = ress['name']
+        DateTime = ress['startTimeSeconds']
+        contest_id = ress['id']
+        time_local = time.localtime(DateTime)
+        dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
         # 加入队列中：名称，时间，id
-        results.append([name,dt,str(contest_id)])
+        results.append([name, dt, str(contest_id)])
         if len(results) >= counts:
             break
-    if len(results)==0:
-        return "居然找不到，可能是：\n1. bot裂了\n2. 网站裂了\n3. 缓存裂了\n4. 地球裂了"+"\n\n防风控编码"+str(time.time())
+    if len(results) == 0:
+        return "居然找不到，可能是：\n1. bot裂了\n2. 网站裂了\n3. 缓存裂了\n4. 地球裂了" + "\n\n防风控编码" + str(
+            time.time())
     else:
         kaitou = '<div align="center">\n <h1> Codeforces历史比赛 </h1> \n</div>\n'
         ans = "<ol>\n"
@@ -278,7 +279,7 @@ async def get_precf(counts):
             ans += f"\n<li>比赛时间：{conts[1]}</li>"
             ans += f"\n<li>比赛链接：https://codeforces.com/contest/{conts[2]}</li>"
             ans += "</ul>\n</li>\n"
-        ans+="</ol>"
+        ans += "</ol>"
         if len(results) < counts:
             return kaitou + f'缓存中CF历史比赛不足 {str(counts)} 场，找到历史 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
         else:
@@ -287,27 +288,27 @@ async def get_precf(counts):
 
 async def get_cf(counts):
     results = []
-    
+
     # response=requests.get("https://codeforces.com/api/contest.list?gym=false")
-    f = open('cf.txt', 'r',encoding='utf-8')
+    f = open('./data/cf.txt', 'r', encoding='utf-8')
     res = f.read()
     f.close()
     res = json.loads(res)['result']
     for ress in res:
         if ress["phase"] == "FINISHED":
             break
-        name=ress['name']
-        DateTime=ress['startTimeSeconds']
-        contest_id=ress['id']
-        time_local=time.localtime(DateTime)
-        dt=time.strftime("%Y-%m-%d %H:%M:%S",time_local)
+        name = ress['name']
+        DateTime = ress['startTimeSeconds']
+        contest_id = ress['id']
+        time_local = time.localtime(DateTime)
+        dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
         # 加入队列中：名称，时间，id
-        results.insert(0,[name,dt,str(contest_id)])
+        results.insert(0, [name, dt, str(contest_id)])
         if len(results) >= counts:
             break
     results = sorted(results, key=lambda x: (x[1]))
-    if len(results)==0:
-        return "没有找到要开始的codeforces比赛哦"+"\n\n防风控编码"+str(time.time())
+    if len(results) == 0:
+        return "没有找到近期的Codeforces比赛哦" + "\n\n防风控编码" + str(time.time())
     else:
         kaitou = '<div align="center">\n <h1> Codeforces近期比赛 </h1> \n</div>\n'
         ans = "<ol>\n"
@@ -317,11 +318,172 @@ async def get_cf(counts):
             ans += f"\n<li>比赛时间：{conts[1]}</li>"
             ans += f"\n<li>比赛链接：https://codeforces.com/contest/{conts[2]}</li>"
             ans += "</ul>\n</li>\n"
-        ans+="</ol>"
+        ans += "</ol>"
         if len(results) < counts:
             return kaitou + f'CF近期比赛不足 {str(counts)} 场，找到近期 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
         else:
             return kaitou + f'找到近期 {str(len(results))} 场CF比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+
+
+async def get_preatc(counts):
+    results = []
+
+    f = open('./data/atc.txt', 'r', encoding='utf-8')
+    res = f.read()
+    f.close()
+    res = BeautifulSoup(res, "html.parser")
+    res = res.select('#contest-table-recent tbody tr')
+    for ress in res:
+        name = ress.select('a')[1].text
+        DateTime = ress.select('time')[0].text
+        last = DateTime.find("+", 0)
+        DateTime = DateTime[0:last]
+        contest_id = ress.select('a')[1]['href']
+        time_local = datetime.datetime.strptime(DateTime, '%Y-%m-%d %H:%M:%S')
+        time_local -= datetime.timedelta(hours=1)
+        dt = datetime.datetime.strftime(time_local, '%Y-%m-%d %H:%M:%S')
+        # 加入队列中：名称，时间，id
+        results.append([name, dt, contest_id])
+        if len(results) >= counts:
+            break
+    if len(results) == 0:
+        return "居然找不到，可能是：\n1. bot裂了\n2. 网站裂了\n3. 缓存裂了\n4. 地球裂了" + "\n\n防风控编码" + str(
+            time.time())
+    else:
+        kaitou = '<div align="center">\n <h1> Atcoder历史比赛 </h1> \n</div>\n'
+        ans = "<ol>\n"
+        for conts in results:
+            ans += "<li>\n<ul>"
+            ans += f"\n<li>比赛名称：{conts[0]}</li>"
+            ans += f"\n<li>比赛时间：{conts[1]}</li>"
+            ans += f"\n<li>比赛链接：https://atcoder.jp{conts[2]}</li>"
+            ans += "</ul>\n</li>\n"
+        ans += "</ol>"
+        if len(results) < counts:
+            return kaitou + f'缓存中Atcoder历史比赛不足 {str(counts)} 场，找到历史 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+        else:
+            return kaitou + f'找到历史 {str(len(results))} 场Atcoder比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+
+
+async def get_atc(counts):
+    results = []
+
+    # response=requests.get("https://ac.atc.com/acm/contest/vip-index")
+    # res=response.text
+    f = open('./data/atc.txt', 'r', encoding='utf-8')
+    res = f.read()
+    f.close()
+    res = BeautifulSoup(res, "html.parser")
+    res = res.select('#contest-table-upcoming tbody tr')
+    for ress in res:
+        name = ress.select('a')[1].text
+        DateTime = ress.select('time')[0].text
+        last = DateTime.find("+", 0)
+        DateTime = DateTime[0:last]
+        contest_id = ress.select('a')[1]['href']
+        time_local = datetime.datetime.strptime(DateTime, '%Y-%m-%d %H:%M:%S')
+        time_local -= datetime.timedelta(hours=1)
+        dt = datetime.datetime.strftime(time_local, '%Y-%m-%d %H:%M:%S')
+        # 加入队列中：名称，时间，id
+        results.append([name, dt, contest_id])
+        if len(results) >= counts:
+            break
+    if len(results) == 0:
+        return "没有找到近期的Atcoder比赛哦" + "\n\n防风控编码" + str(time.time())
+    else:
+        kaitou = '<div align="center">\n <h1> Atcoder近期比赛 </h1> \n</div>\n'
+        ans = "<ol>\n"
+        for conts in results:
+            ans += "<li>\n<ul>"
+            ans += f"\n<li>比赛名称：{conts[0]}</li>"
+            ans += f"\n<li>比赛时间：{conts[1]}</li>"
+            ans += f"\n<li>比赛链接：https://atcoder.jp{conts[2]}</li>"
+            ans += "</ul>\n</li>\n"
+        ans += "</ol>"
+        if len(results) < counts:
+            return kaitou + f'Atcoder近期比赛不足 {str(counts)} 场，找到近期 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+        else:
+            return kaitou + f'找到近期 {str(len(results))} 场Atcoder比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+
+
+async def get_prenc(counts):
+    results = []
+
+    f = open('./data/nc.txt', 'r', encoding='utf-8')
+    res = f.read()
+    f.close()
+    res = BeautifulSoup(res, "html.parser")
+    res = res.select('.platform-mod.js-end .platform-item.js-item.finish')
+    for ress in res:
+        # 选择比赛json
+        cont = json.loads(html.unescape(ress.get('data-json')))
+        name = cont['contestName']
+        DateTime = cont['contestStartTime']
+        contest_id = cont['contestId']
+        time_local = time.localtime(DateTime // 1000)
+        dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+        # 加入队列中：名称，时间，id
+        results.append([name, dt, str(contest_id)])
+        if len(results) >= counts:
+            break
+    if len(results) == 0:
+        return "居然找不到，可能是：\n1. bot裂了\n2. 网站裂了\n3. 缓存裂了\n4. 地球裂了" + "\n\n防风控编码" + str(
+            time.time())
+    else:
+        kaitou = '<div align="center">\n <h1> 牛客历史比赛 </h1> \n</div>\n'
+        ans = "<ol>\n"
+        for conts in results:
+            ans += "<li>\n<ul>"
+            ans += f"\n<li>比赛名称：{conts[0]}</li>"
+            ans += f"\n<li>比赛时间：{conts[1]}</li>"
+            ans += f"\n<li>比赛链接：https://ac.nowcoder.com/acm/contest/{conts[2]}</li>"
+            ans += "</ul>\n</li>\n"
+        ans += "</ol>"
+        if len(results) < counts:
+            return kaitou + f'缓存中牛客历史比赛不足 {str(counts)} 场，找到历史 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+        else:
+            return kaitou + f'找到历史 {str(len(results))} 场牛客比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+
+
+async def get_nc(counts):
+    results = []
+
+    #* 牛客
+    # response=requests.get("https://ac.nowcoder.com/acm/contest/vip-index")
+    # res=response.text
+    f = open('./data/nc.txt', 'r', encoding='utf-8')
+    res = f.read()
+    f.close()
+    res = BeautifulSoup(res, "html.parser")
+    res = res.select('.platform-mod.js-current .platform-item.js-item')
+    for ress in res:
+        # 选择比赛介绍
+        cont = json.loads(html.unescape(ress.get('data-json')))
+        name = cont['contestName']
+        DateTime = cont['contestStartTime']
+        contest_id = cont['contestId']
+        time_local = time.localtime(DateTime // 1000)
+        dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+        # 加入队列中：名称，时间，id
+        results.append([name, dt, str(contest_id)])
+        if len(results) >= counts:
+            break
+    if len(results)==0:
+        return "没有找到近期的牛客比赛哦"+"\n\n防风控编码"+str(time.time())
+    else:
+        kaitou = '<div align="center">\n <h1> 牛客近期比赛 </h1> \n</div>\n'
+        ans = "<ol>\n"
+        for conts in results:
+            ans += "<li>\n<ul>"
+            ans += f"\n<li>比赛名称：{conts[0]}</li>"
+            ans += f"\n<li>比赛时间：{conts[1]}</li>"
+            ans += f"\n<li>比赛链接：https://ac.nowcoder.com/acm/contest/{conts[2]}</li>"
+            ans += "</ul>\n</li>\n"
+        ans+="</ol>"
+        if len(results) < counts:
+            return kaitou + f'牛客近期比赛不足 {str(counts)} 场，找到近期 {str(len(results))} 场比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
+        else:
+            return kaitou + f'找到近期 {str(len(results))} 场牛客比赛如下：\n' + ans + f'\n\n防风控编码 {str(time.time())}\n'
 
 if __name__ == '__main__':
     print(1)
