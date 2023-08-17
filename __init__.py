@@ -289,3 +289,24 @@ async def cmd_nc(event: MessageEvent):
         await nc.finish(
             MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
                                                  str(time.time()))))
+
+
+# next
+_next = on_keyword(['next','近期','近期比赛'], priority=2)
+
+
+@_next.handle()
+async def cmd_next(event: MessageEvent):
+    try:
+        counts = int(str(event.get_message()).split()[1])
+    except:
+        counts = 3
+    try:
+        res = await get_next(counts)
+        await _next.finish(MessageSegment.image(await md_to_pic(res)))
+    except Exception as e:
+        logger.warning("查询失败！")
+        logger.warning(e)
+        await _next.finish(
+            MessageSegment.image(await md_to_pic("查询失败！\n" + e + "\n\n防风控编码" +
+                                                 str(time.time()))))
